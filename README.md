@@ -25,24 +25,30 @@ Building
 
 Written in plain-old C.
 
-	git clone https://github.com/infradig/trealla.git
-	cd trealla
-	make
-	make test
+```bash
+git clone https://github.com/infradig/trealla.git
+cd trealla
+make
+make test
+```
 
 There are no dependencies except OpenSSL, which can removed by:
 
-	make nossl
+```bash
+make nossl
+```
 
 Run...
 
-	make clean && make debug
-	make test_valgrind
+```bash
+make clean && make debug
+make test_valgrind
+```
 
-to do the tests under *valgrind* memory checking.
+to do the tests under `valgrind` memory checking.
 
-A 'make debug' build compiles in 0.2s with *tcc* and about 2s with
-*clang* and *gcc*. Should build on any Unix-like system with a C99
+A `make debug` build compiles in 0.2s with `tcc` and about 2s with
+`clang` and `gcc`. Should build on any Unix-like system with a C99
 compiler (could do C89 with a few cosmetic tweaks). Has been tested on
 Manjaro, Ubuntu, FreeBSD and Raspbian (32 & 64-bit) systems. There
 are no plans for a Windows port.
@@ -69,8 +75,10 @@ where options can be:
 
 For example:
 
-	./tpl samples/sieve -g test2,halt
-	./tpl samples/sieve -g test2,halt
+```bash
+./tpl samples/sieve -g test2,halt
+./tpl samples/sieve -g test2,halt
+```
 
 Invocation without any goal presents the REPL.
 
@@ -204,8 +212,8 @@ Others
 
 	persist/1               # directive 'persist funct/arity'
 
-Note: consult/1 and load_files/2 support lists of files as args. Also
-support loading into modules eg. *consult(MOD:FILE-SPEC)*.
+Note: `consult/1` and `load_files/2` support lists of files as args. Also
+support loading into modules eg. `consult(MOD:FILE-SPEC)`.
 
 
 A simple dictionary
@@ -247,34 +255,34 @@ Networking					##EXPERIMENTAL##
 	client/4                # client(+url,-host,-path,-stream)
 	client/5                # client(+url,-host,-path,-stream,+list)
 
-The options list can include *udp(bool)* (default is false),
-*nodelay(bool)* (default is true), *ssl(bool)* (default is false)
-and *certfile(filespec)*.
+The options list can include `udp(bool)` (default is false),
+`nodelay(bool)` (default is true), `ssl(bool)` (default is false)
+and `certfile(filespec)`.
 
-The additional server options can include *keyfile(filespec)* and
-*certfile(filespec)*. If just one concatenated file is supplied, use
-*keyfile(filespec)* only.
+The additional server options can include `keyfile(filespec)` and
+`certfile(filespec)`. If just one concatenated file is supplied, use
+`keyfile(filespec)` only.
 
-The optional schemes 'http://' (the default) and 'https://' can be
+The optional schemes `http://` (the default) and `https://` can be
 provided in the client URL.
 
-With *bread/3* the 'len' arg can be an integer > 0 meaning return that
+With `bread/3` the `len` arg can be an integer > 0 meaning return that
 many bytes, = 0 meaning return what is there (if non-blocking) or a var
 meaning return all bytes until end end of file,
 
-Network SSL reading does not support get_code/get_char/peek_code/peek_char.
+Network SSL reading does not support `get_code`/`get_char`/`peek_code`/`peek_char`.
 
 
 Persistence					##EXPERIMENTAL##
 ===========
 
-Declaring something dynamic with the *persist* directive:
+Declaring something dynamic with the `persist` directive:
 
 	:- persist :predindicator
 
 causes that clause to be saved to a per-module database on update
-(asserta/assertz/retract). Maybe this should be an option to
-*dynamic/2*?
+(`asserta`/`assertz`/`retract`). Maybe this should be an option to
+`dynamic/2`?
 
 
 Concurrency					##EXPERIMENTAL##
@@ -293,68 +301,72 @@ either explicitly or implicitly (when waiting on input or a timer)...
 	recv/1                  # pop term from queue
 	spawnlist/1-n           # concurrent form of maplist/1-n
 
-Note: *send/1*, *sleep/1* and *delay/1* do implied yields. As does *getline/2*,
-*bread/3*, *bwrite/2* and *accept/2*.
+Note: `send/1`, `sleep/1` and `delay/1` do implied yields. As does `getline/2`,
+`bread/3`, `bwrite/2` and `accept/2`.
 
-Note: *spawn/n* acts as if defined as:
+Note: `spawn/n` acts as if defined as:
 
 	spawn(G) :- fork, call(G).
 	spawn(G,P1) :- fork, call(G,P1).
 	spawn(G,P1,P2) :- fork, call(G,P1,P2).
 	...
 
-In practice *spawn* calls a special version of *fork/0* that limits
-the number of such concurrent tasks (see the *cpu_count* flag, initially
+In practice `spawn` calls a special version of `fork/0` that limits
+the number of such concurrent tasks (see the `cpu_count` flag, initially
 and artificially set at 4). Excess tasks will be scheduled as tasks finish.
 
 An example:
 
-	geturl(Url) :-
-		http_get(Url,_Data,[status_code(Code),final_url(Location)]),
-		format("Job [~w] ~w ==> ~w done~n",[Url,Code,Location]).
+```prolog
+geturl(Url) :-
+	http_get(Url,_Data,[status_code(Code),final_url(Location)]),
+	format("Job [~w] ~w ==> ~w done~n",[Url,Code,Location]).
 
-	% Fetch each URL in list sequentially...
+% Fetch each URL in list sequentially...
 
-	test54 :-
-		L = ['www.google.com','www.bing.com','www.duckduckgo.com'],
-		maplist(geturl,L),
-		writeln('Finished').
+test54 :-
+	L = ['www.google.com','www.bing.com','www.duckduckgo.com'],
+	maplist(geturl,L),
+	writeln('Finished').
 
-	% Fetch each URL in list concurrently (method 1)...
+% Fetch each URL in list concurrently (method 1)...
 
-	test55 :-
-		L = ['www.google.com','www.bing.com','www.duckduckgo.com'],
-		maplist(spawn(geturl),L),
-		wait,
-		writeln('Finished').
+test55 :-
+	L = ['www.google.com','www.bing.com','www.duckduckgo.com'],
+	maplist(spawn(geturl),L),
+	wait,
+	writeln('Finished').
 
-	% Fetch each URL in list concurrently (method 2)...
+% Fetch each URL in list concurrently (method 2)...
 
-	test56 :-
-		L = ['www.google.com','www.bing.com','www.duckduckgo.com'],
-		spawnlist(geturl,L),
-		writeln('Finished').
+test56 :-
+	L = ['www.google.com','www.bing.com','www.duckduckgo.com'],
+	spawnlist(geturl,L),
+	writeln('Finished').
+```
 
-	$ ./tpl samples/test -g "time(test54),halt"
-	Job [www.google.com] 200 ==> www.google.com done
-	Job [www.bing.com] 200 ==> www.bing.com done
-	Job [www.duckduckgo.com] 200 ==> https://duckduckgo.com done
-	Finished
-	Time elapsed 0.663 secs
+```console
+$ ./tpl samples/test -g "time(test54),halt"
+Job [www.google.com] 200 ==> www.google.com done
+Job [www.bing.com] 200 ==> www.bing.com done
+Job [www.duckduckgo.com] 200 ==> https://duckduckgo.com done
+Finished
+Time elapsed 0.663 secs
 
-	$ ./tpl samples/test -g "time(test55),halt"
-	Job [www.duckduckgo.com] 200 ==> https://duckduckgo.com done
-	Job [www.bing.com] 200 ==> www.bing.com done
-	Job [www.google.com] 200 ==> www.google.com done
-	Finished
-	Time elapsed 0.331 secs
+$ ./tpl samples/test -g "time(test55),halt"
+Job [www.duckduckgo.com] 200 ==> https://duckduckgo.com done
+Job [www.bing.com] 200 ==> www.bing.com done
+Job [www.google.com] 200 ==> www.google.com done
+Finished
+Time elapsed 0.331 secs
 
-	$ ./tpl samples/test -g "time(test56),halt"
-	Job [www.duckduckgo.com] 200 ==> https://duckduckgo.com done
-	Job [www.bing.com] 200 ==> www.bing.com done
-	Job [www.google.com] 200 ==> www.google.com done
-	Finished
-	Time elapsed 0.33 secs
+$ ./tpl samples/test -g "time(test56),halt"
+Job [www.duckduckgo.com] 200 ==> https://duckduckgo.com done
+Job [www.bing.com] 200 ==> www.bing.com done
+Job [www.google.com] 200 ==> www.google.com done
+Finished
+Time elapsed 0.33 secs
+```
 
 
 Rationals						##EXPERIMENTAL##
@@ -362,7 +374,7 @@ Rationals						##EXPERIMENTAL##
 
 Rationals are a native type, with integers just a special case where
 the denominator happens to be 1. Rationals can be specified using
-the *rdiv/2* operator:
+the `rdiv/2` operator:
 
 	?- X is 1 / 7, Y is rationalize(X).
 	X = 0.1428571428571428
@@ -422,20 +434,22 @@ Compiled with GCC 10.1.0 on Linux.
 	time scryer-prolog samples/sieve.pro -g test5,halt
 	etc
 
-Times for gprolog & scryer were done using the unix *time* command and
+Times for gprolog & scryer were done using the unix `time` command and
 thus include setup time, whereas the others were done with the predicate
-*time(Goal)*.
+`time(Goal)`.
 
 Also, gprolog only seems to implement 1st argument indexing (hence very
-slow *testindex1b* result) Also 2 internal stacks needed to be boosted.
+slow `testindex1b` result) Also 2 internal stacks needed to be boosted.
 
-Yap came from *git clone https://github.com/vscosta/yap-6.3* and needs
-*cmake* installed.
+Yap came from `git clone https://github.com/vscosta/yap-6.3` and needs
+`cmake` installed.
 
-Scryer came from *cargo install scryer-prolog* (it takes a long time)
-and needs *m4* installed. Chess needs name/2 (at least).
+Scryer came from `cargo install scryer-prolog` (it takes a long time)
+and needs `m4` installed. Chess needs `name/2` (at least).
 
 The Peirera (sic) benchmarks can be run:
 
-	tpl samples/broken/peirera.pl -g bench_peirera,halt
-	swipl -l samples/broken/peirera.pl -g bench_peirera,halt
+```bash
+tpl samples/broken/peirera.pl -g bench_peirera,halt
+swipl -l samples/broken/peirera.pl -g bench_peirera,halt
+```
